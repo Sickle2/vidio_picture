@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="../js/jquery-1.10.2.min.js" ></script>
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+</head>
+<body>
+<!--huhuhuhuhu<input type="button" onclick="on()">-->
+<div align="center">
+    引入新课
+    <select id="select1"></select>:<select id="select2"></select>:<select id="select3"></select>
+    <br>
+    讲授新课
+    <select id="select4"></select>:<select id="select5"></select>:<select id="select6"></select>
+    <br>
+    巩固知识
+    <select id="select17"></select>:<select id="select18"></select>:<select id="select19"></select>
+    <br>
+    课堂小结
+    <select id="select27"></select>:<select id="select28"></select>:<select id="select29"></select>
+    <br>
+    布置作业
+    <select id="select37"></select>:<select id="select38"></select>:<select id="select39"></select>
+    <script type="text/javascript" >
+        $(document).ready(function() {
+            var html1 = "";
+            var html2 = "";
+            var html3 = "";
+            for(var i=0;i<24;i++){
+                html1 += "<option id="+i+" value="+i+">" + i+ "</option>";
+            }
+            for(var i=0;i<60;i++){
+                html2 += "<option id="+i+" value="+i+">" + i+ "</option>";
+            }
+            for(var i=0;i<60;i++){
+                html3 += "<option id="+i+" value="+i+">" + i+ "</option>";
+            }
+            $("#select1").append(html1);
+            $("#select2").append(html2);
+            $("#select3").append(html3);
+            $("#select4").append(html1);
+            $("#select5").append(html2);
+            $("#select6").append(html3);
+            $("#select17").append(html1);
+            $("#select18").append(html2);
+            $("#select19").append(html3);
+            $("#select27").append(html1);
+            $("#select28").append(html2);
+            $("#select29").append(html3);
+            $("#select37").append(html1);
+            $("#select38").append(html2);
+            $("#select39").append(html3);
+        })
+    </script>
+</div>
+<div>
+
+</div>
+<div align="center">
+    <input type="button" onclick="time()" value="确定">
+    <script type="text/javascript" >
+        function time() {
+            var onetime = Number($("#select1").val())*60*60+Number($("#select2").val())*60+Number($("#select3").val());
+            var twotime = Number($("#select4").val())*60*60+Number($("#select5").val())*60+Number($("#select6").val());
+            var threetime = Number($("#select17").val())*60*60+Number($("#select18").val())*60+Number($("#select19").val());
+            var fourtime = Number($("#select27").val())*60*60+Number($("#select28").val())*60+Number($("#select29").val());
+            var fivetime = Number($("#select37").val())*60*60+Number($("#select38").val())*60+Number($("#select39").val());
+            var all = onetime+twotime+threetime+fourtime+fivetime;
+            $.ajax({
+                url:'/time/post',
+                type: 'POST',
+                cache: false,
+                contentType: "application/json", //必须有
+                dataType: "json", //表示返回值类型，不必须
+                data: JSON.stringify(
+                    {
+                    "load":onetime,
+                    'teach':twotime,
+                    'strengthen':threetime,
+                    'summary':fourtime,
+                    'homework':fivetime,
+                    'all':all
+                }), //相当于 //data: "{'str1':'foovalue', 'str2':'barvalue'}",
+                success: function (data) {
+                    alert("设定成功！"+data);
+
+                }
+            })
+//            alert("1:"+onetime+"  2:"+twotime+"  3:"+threetime+"  4:"+fourtime+"  5:"+fivetime);
+            location.href = "Vidio.html";
+        }
+    </script>
+</div>
+</body>
+</html>

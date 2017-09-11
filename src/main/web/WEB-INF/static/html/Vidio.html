@@ -1,0 +1,184 @@
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>Test</title>
+    <link type="text/css" rel="stylesheet" href="../css/home.css" >
+    <script type="text/javascript" src="../js/jquery-3.2.1.js" ></script>
+    <script type="text/javascript" src="../layui/layui.all.js"></script>
+    <!--<script type="text/javascript" src="../js/ajaxfileupload.js" />-->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+</head>
+<body>
+<div id="promoNode">
+
+<p>Using Opera Next or Chrome Canary, use this page to take your picture!</p>
+
+<!--
+    Ideally these elements aren't created until it's confirmed that the
+    client supports video/camera, but for the sake of illustrating the
+    elements involved, they are created with markup (not JavaScript)
+-->
+<video id="video" width="auto" height="auto" autoplay></video>
+<!--<button id="snap" class="sexyButton">Snap Photo</button>-->
+
+<div style="display: none">
+    <canvas id="canvas" width="100" height="200"></canvas>
+</div>    <!--<>-->
+<script type="text/javascript">
+    $(document).ready(function () {
+        var websocket = null;
+        //判断当前浏览器是否支持WebSocket
+        if ('WebSocket' in window) {
+            websocket = new WebSocket("ws://localhost:8080/picture");
+        }
+        else {
+            alert('当前浏览器 Not support websocket')
+        }
+
+        //连接发生错误的回调方法
+        websocket.onerror = function () {
+            console.log("WebSocket连接发生错误");
+        };
+
+        //连接成功建立的回调方法
+        websocket.onopen = function () {
+            console.log("WebSocket连接成功");
+            websocket.send("----------------WebSocket连接成功--------------------");
+        }
+
+        //接收到消息的回调方法
+//        websocket.onmessage = function (event) {
+//
+//                console.log("xxxx");
+//
+//            websocket.send("++++++++++++++++++++++++++++++++++++++++++++"+event.data());
+//        }
+        websocket.addEventListener("message", function(event) {
+            var data = event.data;
+            // 处理数据
+//            websocket.send("-------------------------------"+data);
+            if(data!=null) {
+                //alert("s2");
+                if (data == close){
+                    close();
+                }
+                takepicture();
+                layer.msg(data);
+
+            }
+        });
+
+        //连接关闭的回调方法
+        websocket.onclose = function () {
+            console.log("WebSocket连接关闭");
+        }
+
+        //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
+        window.onbeforeunload = function () {
+            closeWebSocket();
+        }
+
+        //将消息显示在网页上
+        function setMessageInnerHTML(innerHTML) {
+            document.getElementById('message').innerHTML += innerHTML + '<br/>';
+        }
+
+        //关闭WebSocket连接
+        function closeWebSocket() {
+            websocket.close();
+        }
+
+    })
+</script>
+
+
+<script>
+    var context;
+    var video;
+    var canvas;
+    // Put event listeners into place
+    window.addEventListener("DOMContentLoaded", function() {
+        // Grab elements, create settings, etc.
+        canvas= document.getElementById('canvas');
+        context  = canvas.getContext('2d');
+        video = document.getElementById('video');
+        var mediaConfig =  { video: true };
+        var errBack = function(error) {
+            console.log('An error has occurred!', e)
+        };
+
+        // Put video listeners into place
+        if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia(mediaConfig).then(function(stream) {
+                video.src = window.URL.createObjectURL(stream);
+                video.play();
+            });
+        }
+
+        /* Legacy code below! */
+        else if(navigator.getUserMedia) { // Standard
+            navigator.getUserMedia(mediaConfig, function(stream) {
+                video.src = stream;
+                video.play();
+            }, errBack);
+        } else if(navigator.webkitGetUserMedia) { // WebKit-prefixed
+            navigator.webkitGetUserMedia(mediaConfig, function(stream){
+                video.src = window.webkitURL.createObjectURL(stream);
+                video.play();
+            }, errBack);
+        } else if(navigator.mozGetUserMedia) { // Mozilla-prefixed
+            navigator.mozGetUserMedia(mediaConfig, function(stream){
+                video.src = window.URL.createObjectURL(stream);
+                video.play();
+            }, errBack);
+        }
+
+
+        // Trigger photo take
+//        document.getElementById("snap").addEventListener("click", function() {
+//
+//
+////        return image;
+//            document.getElementById("pngHolder2")
+//        });
+
+
+        }, false);
+
+    function takepicture() {
+        //alert("s1");
+        context.drawImage(video, 0, 0, 100, 200);
+        var image = new Image();
+        image.src = canvas.toDataURL("image/png").split(":")[1];
+//        alert(image.src);
+       var  imgSTR= image.src.split(",")[1];
+        var imgbase64=image.src.substring();
+//        alert(imgbase64)
+//        var reader=new FileReader();
+//        var data = reader.readAsDataURL(image);
+//        alert("d");
+
+//            $.post('/home/index', { "img": canvas.toDataURL().substr(22) }, function (data, status) {
+//                alert(status!="success"?"图片处理出错！":data== "yes"?"图片上传完成！":data);
+//            }, "text");
+        $.ajax({
+            url:'/upload/save',
+            type: 'POST',
+            cache: false,
+            data: {picture:imgSTR}, //相当于 //data: "{'str1':'foovalue', 'str2':'barvalue'}",
+            success: function (data) {
+                alert("上传成功！"+data);
+
+            }
+        })
+    }
+
+</script>
+</div>
+
+<div id="pngHolder2" >
+
+</div>
+</body>
+</html>
